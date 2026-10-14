@@ -1,0 +1,66 @@
+name: Update Moon Dashboard
+
+on:
+  schedule:
+    # Once a day, just after local midnight in the US Pacific time zone
+    # (08:15 UTC = 12:15 AM PST / 1:15 AM PDT). The date and "in N days"
+    # text change at midnight, and the moon itself moves only a few % per day.
+    - cron: '15 8 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Render dashboard image
+        env:
+          OUTPUT_DIR: site
+          TZ_NAME: ${{ vars.TZ_NAME }}
+          LAT: ${{ vars.LAT }}
+          LON: ${{ vars.LON }}
+          HEMISPHERE: ${{ vars.HEMISPHERE }}
+          ROTATE: ${{ vars.ROTATE }}
+        run: python scripts/render_moon.py
+
+      - name: Add a simple index page
+        run: |
+          cat > site/index.html <<'EOF'
+          <!doctype html>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>Moon Dashboard</title>
+          <body style="margin:0;background:#000">
+          <img src="moon_dashboard.png" alt="Current moon phase" style="display:block;max-width:100%;max-height:100vh;margin:0 auto">
+          </body>
+          EOF
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

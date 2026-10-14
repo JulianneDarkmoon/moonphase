@@ -1,0 +1,4 @@
+ephem>=4.1
+Pillow>=10.0
+numpy>=1.26
+tzdata>=2024.1
