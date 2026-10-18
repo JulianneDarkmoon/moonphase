@@ -617,7 +617,7 @@ def draw_week_labels(ui, days, tz):
     for i, (centre_x, dt) in enumerate(days):
         loc = dt.astimezone(tz)
         label = "TODAY" if i == 0 else f"{loc:%a} {loc.day}".upper()
-        ui.text(centre_x, 1580, label, "SemiBold", 20, YELLOW if i == 0 else WHITE, align="m", tracking=1)
+        ui.text(centre_x, 240, label, "SemiBold", 20, YELLOW if i == 0 else WHITE, align="m", tracking=1)
         if i == 0:
             ui.circle(centre_x, WEEK_Y, 40, outline=YELLOW, width=3)
 
