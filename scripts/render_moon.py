@@ -622,7 +622,7 @@ def draw_week_labels(ui, days, tz):
             ui.circle(centre_x, WEEK_Y, 40, outline=YELLOW, width=3)
 
 
-WEEK_Y = 1514
+WEEK_Y = 200
 WEEK_R = 28
 
 
