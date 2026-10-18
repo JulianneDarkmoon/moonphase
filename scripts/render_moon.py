@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Render a 800x480 moon-phase dashboard for a 6-colour E Ink Spectra 6 panel.
+Render a 1200x1600 moon-phase dashboard for a 6-colour E Ink Spectra 6 panel.
 
 The image only ever contains the six panel colours (black, white, red, yellow,
 green, blue).  The moon itself is shaded in greyscale and error-diffusion
@@ -39,7 +39,7 @@ from PIL import Image, ImageDraw, ImageFont
 # --------------------------------------------------------------------------
 # Canvas + palette
 # --------------------------------------------------------------------------
-W, H = 800, 480
+W, H = 1200, 1600
 SS = 3  # supersampling factor for the flat-colour UI layer
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -480,9 +480,9 @@ class Ui:
 # --------------------------------------------------------------------------
 # Layout
 # --------------------------------------------------------------------------
-CX, CY = 240, 240          # moon centre
-R_MOON = 200
-R_RING = 220
+CX, CY = 600, 566          # moon centre
+R_MOON = 410
+R_RING = 470
 
 
 def fmt_time(dt):
@@ -594,7 +594,7 @@ def draw_title(ui, st):
 
 def draw_cards(ui, st, tz):
     now = st["now"]
-    top, h = 200, 126
+    top, h = 1296, 126
     cards = [
         (60, "NEXT NEW MOON", st["next"]["new"], BLUE, None),
         (620, "NEXT FULL MOON", st["next"]["full"], YELLOW,
@@ -612,17 +612,17 @@ def draw_cards(ui, st, tz):
 
 
 def draw_week_labels(ui, days, tz):
-    y_line = 400
+    y_line = 1448
     ui.rect(60, y_line, W - 60, y_line + 2, BLUE)
     for i, (centre_x, dt) in enumerate(days):
         loc = dt.astimezone(tz)
         label = "TODAY" if i == 0 else f"{loc:%a} {loc.day}".upper()
-        ui.text(centre_x, 240, label, "SemiBold", 20, YELLOW if i == 0 else WHITE, align="m", tracking=1)
+        ui.text(centre_x, 1580, label, "SemiBold", 20, YELLOW if i == 0 else WHITE, align="m", tracking=1)
         if i == 0:
             ui.circle(centre_x, WEEK_Y, 40, outline=YELLOW, width=3)
 
 
-WEEK_Y = 200
+WEEK_Y = 1514
 WEEK_R = 28
 
 
