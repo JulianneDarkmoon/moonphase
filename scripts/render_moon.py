@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Render a 1200x1600 moon-phase dashboard for a 6-colour E Ink Spectra 6 panel.
+Render a 800x480 moon-phase dashboard for a 6-colour E Ink Spectra 6 panel.
 
 The image only ever contains the six panel colours (black, white, red, yellow,
 green, blue).  The moon itself is shaded in greyscale and error-diffusion
@@ -594,7 +594,7 @@ def draw_title(ui, st):
 
 def draw_cards(ui, st, tz):
     now = st["now"]
-    top, h = 1296, 126
+    top, h = 200, 126
     cards = [
         (60, "NEXT NEW MOON", st["next"]["new"], BLUE, None),
         (620, "NEXT FULL MOON", st["next"]["full"], YELLOW,
@@ -612,7 +612,7 @@ def draw_cards(ui, st, tz):
 
 
 def draw_week_labels(ui, days, tz):
-    y_line = 1448
+    y_line = 400
     ui.rect(60, y_line, W - 60, y_line + 2, BLUE)
     for i, (centre_x, dt) in enumerate(days):
         loc = dt.astimezone(tz)
