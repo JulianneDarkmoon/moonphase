@@ -39,7 +39,7 @@ from PIL import Image, ImageDraw, ImageFont
 # --------------------------------------------------------------------------
 # Canvas + palette
 # --------------------------------------------------------------------------
-W, H = 1200, 1600
+W, H = 800, 480
 SS = 3  # supersampling factor for the flat-colour UI layer
 
 ROOT = Path(__file__).resolve().parent.parent
