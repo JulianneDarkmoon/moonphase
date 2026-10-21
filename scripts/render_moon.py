@@ -1,26 +1,31 @@
 #!/usr/bin/env python3
 """
-Render a 1200x1600 moon-phase dashboard for a 6-colour E Ink Spectra 6 panel.
+Render an 800x480 landscape moon-phase dashboard for a 6-colour E Ink Spectra 6
+panel.
+
+Layout: the moon (with its phase ring) fills the left side; the phase name,
+stats, next new / full moon cards and a 7-day mini-moon strip sit in a column
+on the right.
 
 The image only ever contains the six panel colours (black, white, red, yellow,
-green, blue).  The moon itself is shaded in greyscale and error-diffusion
+green, blue). The moon itself is shaded in greyscale and error-diffusion
 dithered against the panel's measured colours; text, rings and other UI are
 drawn as crisp flat colours.
 
 Configuration is via environment variables (all optional):
 
-  TZ_NAME      IANA time zone for dates/times on the display
-               (default: America/Los_Angeles)
-  LAT, LON     Observer location in decimal degrees (e.g. 34.05 / -118.24).
-               Enables moonrise / moonset on the display.
-  HEMISPHERE   "north" (default) or "south" -- south flips the moon 180 degrees
-               as it appears from the southern hemisphere.
-  ROTATE       0 (default), 90, 180 or 270 -- rotate the finished image,
-               e.g. to match how the panel is mounted.
-  DITHER       "1" (default) to dither the moon, "0" for flat nearest-colour.
-  OUTPUT_DIR   Where to write files (default: ./output)
-  MOON_NOW     ISO-8601 timestamp to render instead of the current time
-               (handy for testing), e.g. 2026-10-26T12:00:00+00:00
+  TZ_NAME     IANA time zone for dates/times on the display
+              (default: America/Los_Angeles)
+  LAT, LON    Observer location in decimal degrees (e.g. 34.05 / -118.24).
+              Enables moonrise / moonset on the display.
+  HEMISPHERE  "north" (default) or "south" -- south flips the moon 180 degrees
+              as it appears from the southern hemisphere.
+  ROTATE      0 (default), 90, 180 or 270 -- rotate the finished image,
+              e.g. to match how the panel is mounted.
+  DITHER      "1" (default) to dither the moon, "0" for flat nearest-colour.
+  OUTPUT_DIR  Where to write files (default: ./output)
+  MOON_NOW    ISO-8601 timestamp to render instead of the current time
+              (handy for testing), e.g. 2026-10-26T12:00:00+00:00
 
 Outputs: <OUTPUT_DIR>/moon_dashboard.png and <OUTPUT_DIR>/moon_data.json
 """
@@ -39,7 +44,7 @@ from PIL import Image, ImageDraw, ImageFont
 # --------------------------------------------------------------------------
 # Canvas + palette
 # --------------------------------------------------------------------------
-W, H = 1200, 1600
+W, H = 800, 480
 SS = 3  # supersampling factor for the flat-colour UI layer
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -131,7 +136,7 @@ def rise_set(now, tz, lat, lon):
     """Moonrise / moonset (local datetimes or None) within the local calendar day."""
     obs = ephem.Observer()
     obs.lat, obs.lon = str(lat), str(lon)
-    obs.pressure = 0          # geometric horizon; avoids refraction fuzz
+    obs.pressure = 0  # geometric horizon; avoids refraction fuzz
     obs.horizon = "-0:34"
     local = now.astimezone(tz)
     start = local.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -180,27 +185,27 @@ def compute_state(now, tz, lat=None, lon=None):
 # --------------------------------------------------------------------------
 # (lat, lon, radius_x_km, radius_y_km, rotation_deg)
 MARIA = [
-    (33, -16, 560, 470, 0),     # Imbrium
-    (28, 18, 330, 330, 0),      # Serenitatis
-    (8, 31, 430, 300, 25),      # Tranquillitatis
-    (17, 59, 240, 170, 0),      # Crisium
-    (-5, 52, 330, 450, 20),     # Fecunditatis
-    (-15, 34, 170, 170, 0),     # Nectaris
-    (-21, -16, 330, 250, 0),    # Nubium
-    (-24, -39, 200, 200, 0),    # Humorum
-    (20, -55, 650, 780, 0),     # Oceanus Procellarum
+    (33, -16, 560, 470, 0),    # Imbrium
+    (28, 18, 330, 330, 0),     # Serenitatis
+    (8, 31, 430, 300, 25),     # Tranquillitatis
+    (17, 59, 240, 170, 0),     # Crisium
+    (-5, 52, 330, 450, 20),    # Fecunditatis
+    (-15, 34, 170, 170, 0),    # Nectaris
+    (-21, -16, 330, 250, 0),   # Nubium
+    (-24, -39, 200, 200, 0),   # Humorum
+    (20, -55, 650, 780, 0),    # Oceanus Procellarum
     (8, -46, 420, 420, 0),
     (31, -52, 380, 430, 0),
     (-6, -58, 330, 300, 0),
-    (-10, -23, 200, 180, 0),    # Cognitum
-    (14, 3, 150, 150, 0),       # Vaporum
-    (59, -22, 380, 105, 8),     # Frigoris (broken into pieces)
+    (-10, -23, 200, 180, 0),   # Cognitum
+    (14, 3, 150, 150, 0),      # Vaporum
+    (59, -22, 380, 105, 8),    # Frigoris (broken into pieces)
     (61, 12, 300, 90, -6),
-    (7, -30, 300, 250, 0),      # Insularum
-    (7, 68, 120, 100, 0),       # Undarum
+    (7, -30, 300, 250, 0),     # Insularum
+    (7, 68, 120, 100, 0),      # Undarum
     (-39, 93, 150, 150, 0),
 ]
-# (lat, lon, radius_km, kind)   kind: bright / dark / plain
+# (lat, lon, radius_km, kind)  kind: bright / dark / plain
 CRATERS = [
     (-43, -11, 85, "bright"),   # Tycho
     (10, -20, 95, "bright"),    # Copernicus
@@ -236,10 +241,9 @@ def build_albedo(S=1024, seed=11):
     ys, xs = np.mgrid[0:S, 0:S].astype(np.float32)
     x = (xs + 0.5) / S * 2 - 1
     y = 1 - (ys + 0.5) / S * 2
-
     n_hi, n_edge, n_mar = _fbm(S, rng), _fbm(S, rng), _fbm(S, rng)
-    alb = 0.86 + 0.16 * n_hi                      # bright highlands
 
+    alb = 0.86 + 0.16 * n_hi  # bright highlands
     mask = np.zeros((S, S), np.float32)
     for lat, lon, rx, ry, rot in MARIA:
         cx, cy = _disc_xy(lat, lon)
@@ -317,7 +321,7 @@ class MoonPainter:
         self.albedo_img = Image.fromarray((albedo * 255).astype(np.uint8), "L")
         self.south = south
         self._cache = {}
-        self.ear = np.zeros((H, W), np.float32)   # probability of a blue earthshine dot
+        self.ear = np.zeros((H, W), np.float32)  # probability of a blue earthshine dot
 
     def _tex(self, D):
         if D not in self._cache:
@@ -329,13 +333,13 @@ class MoonPainter:
         R = int(math.ceil(r)) + 2
         D = 2 * R + 1
         yy, xx = np.mgrid[-R:R + 1, -R:R + 1].astype(np.float32)
-        px, py = xx / r, -yy / r                       # py up
+        px, py = xx / r, -yy / r  # py up
         rr = np.sqrt(px * px + py * py)
         cov = np.clip((1 - rr) * r + 0.5, 0, 1)
         pz = np.sqrt(np.clip(1 - rr * rr, 0, 1))
 
         e = math.radians(elong_deg)
-        lx, lz = math.sin(e), -math.cos(e)             # sun direction (x right, z to viewer)
+        lx, lz = math.sin(e), -math.cos(e)  # sun direction (x right, z to viewer)
         mu0 = px * lx + pz * lz
         mu = pz
         lit = np.where(mu0 > 0, 2 * mu0 / (mu0 + mu + 1e-4), 0.0)
@@ -346,8 +350,8 @@ class MoonPainter:
         ix = np.clip(((px + 1) / 2 * D).astype(int), 0, D - 1)
         iy = np.clip(((1 - py) / 2 * D).astype(int), 0, D - 1)
         alb = tex[iy, ix]
-
         v = lit * alb
+
         # faint earthshine on the dark side, rendered later as sparse blue stipple
         ear = (1 - np.minimum(1, lit * 4)) * (0.010 + 0.040 * alb) * cov
 
@@ -478,11 +482,17 @@ class Ui:
 
 
 # --------------------------------------------------------------------------
-# Layout
+# Layout (800x480 landscape: moon on the left, info column on the right)
 # --------------------------------------------------------------------------
-CX, CY = 600, 566          # moon centre
-R_MOON = 410
-R_RING = 470
+CX, CY = 230, 240            # moon centre
+R_MOON = 184
+R_RING = 212
+
+COL_X0, COL_X1 = 478, 772    # right-hand info column
+COL_W = COL_X1 - COL_X0
+
+STRIP_Y = 430                # centre line of the 7-day mini-moon strip
+WEEK_R = 14
 
 
 def fmt_time(dt):
@@ -509,121 +519,133 @@ def ring_pos(angle_deg, r=R_RING):
 
 
 def draw_stars(ui):
+    """Scatter stars around the ring on the left half only."""
     import random
     rng = random.Random(42)
     placed = []
     tries = 0
-    while len(placed) < 95 and tries < 5000:
+    while len(placed) < 26 and tries < 5000:
         tries += 1
-        x, y = rng.uniform(20, W - 20), rng.uniform(92, 1050)
-        if math.hypot(x - CX, y - CY) < R_RING + 34:
+        x, y = rng.uniform(10, 466), rng.uniform(10, H - 10)
+        if math.hypot(x - CX, y - CY) < R_RING + 24:
             continue
-        if any(math.hypot(x - a, y - b) < 38 for a, b, _ in placed):
+        if any(math.hypot(x - a, y - b) < 30 for a, b, _ in placed):
             continue
         placed.append((x, y, rng.random()))
     for x, y, t in placed:
         if t > 0.975:
-            ui.circle(x, y, 3.2, fill=RED)
+            ui.circle(x, y, 2.6, fill=RED)
         elif t > 0.955:
-            ui.circle(x, y, 2.8, fill=GREEN)
+            ui.circle(x, y, 2.3, fill=GREEN)
         elif t > 0.93:
-            ui.circle(x, y, 2.6, fill=YELLOW)
+            ui.circle(x, y, 2.2, fill=YELLOW)
         elif t > 0.86:
-            ui.circle(x, y, 2.4, fill=BLUE)
+            ui.circle(x, y, 2.0, fill=BLUE)
         elif t > 0.5:
-            ui.circle(x, y, 2.0, fill=WHITE)
+            ui.circle(x, y, 1.7, fill=WHITE)
         else:
-            ui.circle(x, y, 1.3, fill=WHITE)
-    for x, y, c in ((140, 205, YELLOW), (1070, 330, WHITE), (1085, 880, YELLOW), (112, 790, WHITE)):
-        ui.sparkle(x, y, 16, c)
+            ui.circle(x, y, 1.1, fill=WHITE)
+    for x, y, c in ((38, 44, YELLOW), (424, 40, WHITE), (432, 442, YELLOW), (36, 438, WHITE)):
+        ui.sparkle(x, y, 10, c)
 
 
 def draw_ring(ui, st):
     e = st["elong"]
-    ui.circle(CX, CY, R_RING, outline=BLUE, width=3)
-    ui.arc(CX, CY, R_RING, -90, -90 + e, YELLOW, 9)
+    ui.circle(CX, CY, R_RING, outline=BLUE, width=2)
+    ui.arc(CX, CY, R_RING, -90, -90 + e, YELLOW, 6)
     # four phase markers
     for ang, kind in ((0, "new"), (90, "fq"), (180, "full"), (270, "lq")):
         x, y = ring_pos(ang)
-        ui.circle(x, y, 21, fill=BLACK)
+        ui.circle(x, y, 14, fill=BLACK)
         if kind == "new":
-            ui.circle(x, y, 14, fill=BLACK, outline=BLUE, width=3)
+            ui.circle(x, y, 9, fill=BLACK, outline=BLUE, width=2)
         elif kind == "full":
-            ui.circle(x, y, 14, fill=WHITE)
+            ui.circle(x, y, 9, fill=WHITE)
         else:
-            ui.circle(x, y, 14, fill=BLACK, outline=WHITE, width=2)
-            ui.pie(x, y, 14, -90, 90, WHITE) if kind == "fq" else ui.pie(x, y, 14, 90, 270, WHITE)
+            ui.circle(x, y, 9, fill=BLACK, outline=WHITE, width=1.5)
+            if kind == "fq":
+                ui.pie(x, y, 9, -90, 90, WHITE)
+            else:
+                ui.pie(x, y, 9, 90, 270, WHITE)
     # current position
     x, y = ring_pos(e)
-    ui.circle(x, y, 27, fill=BLACK)
-    ui.circle(x, y, 19, fill=YELLOW)
-    ui.circle(x, y, 7, fill=BLACK)
+    ui.circle(x, y, 17, fill=BLACK)
+    ui.circle(x, y, 12, fill=YELLOW)
+    ui.circle(x, y, 4.5, fill=BLACK)
 
 
 def draw_header(ui, st, tz):
     local = st["now"].astimezone(tz)
-    ui.rect(60, 44, 78, 50, YELLOW)
-    ui.text(94, 64, "LUNAR PHASE", "SemiBold", 25, WHITE, tracking=5)
-    ui.text(W - 60, 64, f"{local:%a}  {local:%b} {local.day}, {local.year}".upper(),
-            "SemiBold", 25, YELLOW, align="r", tracking=4)
+    ui.rect(COL_X0, 21, COL_X0 + 12, 25, YELLOW)
+    ui.text(COL_X0 + 22, 30, "LUNAR PHASE", "SemiBold", 15, WHITE, tracking=3)
+    ui.text(COL_X0, 52, f"{local:%a} {local:%b} {local.day}, {local.year}".upper(),
+            "SemiBold", 15, YELLOW, tracking=2)
 
 
 def draw_title(ui, st):
-    name = st["name"]
-    size = 124
-    while ui.text_width(name, "SemiBold", size) > W - 120:
+    """Phase name, one word per line (every phase name has two words)."""
+    lines = st["name"].split(" ", 1)
+    size = 48
+    while max(ui.text_width(s, "SemiBold", size) for s in lines) > COL_W and size > 20:
         size -= 2
-    ui.text(W / 2, 1158, name, "SemiBold", size, WHITE, align="m")
-    illum = int(round(st["illum"]))
-    ui.text(W / 2, 1214, f"{illum}% illuminated   ·   day {st['age']:.1f} of 29.5",
-            "Medium", 36, WHITE, align="m")
+    lh = round(size * 1.04)
+    y = 100
+    for s in lines:
+        ui.text(COL_X0, y, s, "SemiBold", size, WHITE)
+        y += lh
 
-    bits = [f"{st['dist_km']:,.0f} km away"]
+
+def draw_stats(ui, st):
+    illum = int(round(st["illum"]))
+    ui.text(COL_X0, 182, f"{illum}% illuminated", "SemiBold", 20, WHITE)
+    ui.text(COL_X0, 204, f"day {st['age']:.1f} of 29.5", "SemiBold", 16, WHITE)
+
+    dist = f"{st['dist_km']:,.0f} km away"
     if st["dist_km"] < 364_000:
-        bits[0] += " · near perigee"
+        dist += " · near perigee"
     elif st["dist_km"] > 404_000:
-        bits[0] += " · near apogee"
+        dist += " · near apogee"
+    ui.text(COL_X0, 226, dist, "SemiBold", 14, YELLOW)
+
     rs = st["rs"]
     if rs:
+        bits = []
         if rs["rise"]:
             bits.append(f"rises {fmt_time(rs['rise'])}")
         if rs["set"]:
             bits.append(f"sets {fmt_time(rs['set'])}")
-    ui.text(W / 2, 1258, "   ·   ".join(bits), "Medium", 28, YELLOW, align="m")
+        if bits:
+            ui.text(COL_X0, 246, " · ".join(bits), "SemiBold", 14, YELLOW)
 
 
 def draw_cards(ui, st, tz):
     now = st["now"]
-    top, h = 1296, 126
+    h = 62
     cards = [
-        (60, "NEXT NEW MOON", st["next"]["new"], BLUE, None),
-        (620, "NEXT FULL MOON", st["next"]["full"], YELLOW,
+        (262, "NEXT NEW MOON", st["next"]["new"], BLUE, None),
+        (332, "NEXT FULL MOON", st["next"]["full"], YELLOW,
          st["full_name"].replace(" Moon", " Supermoon") if st["full_super"] else st["full_name"]),
     ]
-    for x, label, when, accent, extra in cards:
+    for top, label, when, accent, extra in cards:
         loc = when.astimezone(tz)
-        ui.rect(x, top, x + 8, top + h, accent)
-        tx = x + 30
-        ui.text(tx, top + 26, label, "SemiBold", 22, WHITE, tracking=3)
-        w = ui.text(tx, top + 88, fmt_date(loc), "SemiBold", 58, WHITE)
+        ui.rect(COL_X0, top, COL_X0 + 5, top + h, accent)
+        tx = COL_X0 + 18
+        ui.text(tx, top + 14, label, "SemiBold", 12, WHITE, tracking=2)
+        ui.text(tx, top + 42, fmt_date(loc), "SemiBold", 28, WHITE)
         if extra:
-            ui.text(x + 520 - 6, top + 88, extra, "Medium", 24, YELLOW, align="r")
-        ui.text(tx, top + 120, f"{loc:%a} {fmt_time(loc)}   ·   {rel(when, now)}", "Medium", 25, WHITE)
+            ui.text(COL_X1, top + 42, extra, "SemiBold", 15, YELLOW, align="r")
+        ui.text(tx, top + 58, f"{loc:%a} {fmt_time(loc)} · {rel(when, now)}", "SemiBold", 13, WHITE)
 
 
 def draw_week_labels(ui, days, tz):
-    y_line = 1448
-    ui.rect(60, y_line, W - 60, y_line + 2, BLUE)
+    ui.rect(COL_X0, 402, COL_X1, 404, BLUE)
     for i, (centre_x, dt) in enumerate(days):
         loc = dt.astimezone(tz)
-        label = "TODAY" if i == 0 else f"{loc:%a} {loc.day}".upper()
-        ui.text(centre_x, 1580, label, "SemiBold", 20, YELLOW if i == 0 else WHITE, align="m", tracking=1)
+        label = "NOW" if i == 0 else f"{loc:%a}".upper()
+        ui.text(centre_x, STRIP_Y + 38, label, "SemiBold", 11,
+                YELLOW if i == 0 else WHITE, align="m", tracking=1)
         if i == 0:
-            ui.circle(centre_x, WEEK_Y, 40, outline=YELLOW, width=3)
-
-
-WEEK_Y = 1514
-WEEK_R = 28
+            ui.circle(centre_x, STRIP_Y, WEEK_R + 6, outline=YELLOW, width=2)
 
 
 # --------------------------------------------------------------------------
@@ -657,15 +679,15 @@ def main():
 
     local_now = now.astimezone(tz)
     days = []
-    slot = (W - 120) / 7
+    slot = COL_W / 7
     for i in range(7):
         if i == 0:
             when = now
         else:
             noon = (local_now + timedelta(days=i)).replace(hour=12, minute=0, second=0, microsecond=0)
             when = noon.astimezone(timezone.utc)
-        x = int(round(60 + slot * (i + 0.5)))
-        painter.draw(canvas, x, WEEK_Y, WEEK_R, elongation_deg(when))
+        x = int(round(COL_X0 + slot * (i + 0.5)))
+        painter.draw(canvas, x, STRIP_Y, WEEK_R, elongation_deg(when))
         days.append((x, when))
 
     img = Image.fromarray(np.clip(canvas, 0, 255).astype(np.uint8), "RGB")
@@ -680,6 +702,7 @@ def main():
     draw_ring(ui, st)
     draw_header(ui, st, tz)
     draw_title(ui, st)
+    draw_stats(ui, st)
     draw_cards(ui, st, tz)
     draw_week_labels(ui, days, tz)
     ui_idx, ui_mask = ui.resolve()
