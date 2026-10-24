@@ -5,7 +5,7 @@ on:
     # Once a day, just after local midnight in the US Pacific time zone
     # (08:15 UTC = 12:15 AM PST / 1:15 AM PDT). The date and "in N days"
     # text change at midnight, and the moon itself moves only a few % per day.
-    - cron: '15 8 * * *'
+    - cron: '5 */6 * * *'
   workflow_dispatch:
 
 permissions:
