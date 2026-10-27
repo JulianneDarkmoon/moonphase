@@ -1,8 +1,8 @@
 # Moon Phase Dashboard
 
-A GitHub Action that renders a **1200 × 1600** moon-phase dashboard for a
+A GitHub Action that renders a **800 × 480** moon-phase dashboard for a
 **6-colour E Ink Spectra 6** panel and publishes it with GitHub Pages, where a
-display (e.g. Seeed E1004 + SenseCraft HMI) can fetch it by URL.
+display (e.g. Seeed E1002 + SenseCraft HMI) can fetch it by URL.
 
 The image shows the current moon (about two thirds of the screen), the phase
 name, illumination %, moon age, distance, the next new and full moon (with the
