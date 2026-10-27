@@ -2,10 +2,8 @@ name: Update Moon Dashboard
 
 on:
   schedule:
-    # Once a day, just after local midnight in the US Pacific time zone
-    # (08:15 UTC = 12:15 AM PST / 1:15 AM PDT). The date and "in N days"
-    # text change at midnight, and the moon itself moves only a few % per day.
-    - cron: '5 */6 * * *'
+    # runs every 2 hours
+    - cron: '5 */2 * * *'
   workflow_dispatch:
 
 permissions:
